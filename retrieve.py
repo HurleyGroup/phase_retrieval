@@ -5,12 +5,16 @@ import torch as tc
 import numpy as np
 import urllib, png
 
+cuda0 = tc.device('cuda')
+
 PR_PATH = '/data2/adyotagupta/APS/190224_DCS/Data/Registered_Impact_PR/'
 XPCI_PATH = '/data2/adyotagupta/APS/190224_DCS/Data/Registered_Impact/'
 SHOT_NUM = re.compile('\d{2}-\d{1}-\d{3}')
 idx_finder = re.compile('(?<=_)\d{1}')
-SCALE, MU= 2.5E-6, .0005 # sets scale of 2.5 um per pixel
-cuda0 = tc.device('cuda')
+SCALE = 2.5E-6 # sets scale of 2.5 um per pixel
+DELTA = 1.3E-6
+PI, LAMBDA = 3.141592654, 5.8E-11 / SCALE
+L, MU = 0.8 / SCALE , 500. * SCALE 
 
 loader = lambda f: np.vstack( imap( np.uint16, png.Reader(file=urllib.urlopen(f)).asDirect()[2] )).astype(float)
 def saver(fname, arr):
@@ -37,11 +41,7 @@ for s in glob.glob(PR_PATH+'*'):
 	NUM_IM = images.shape[0]
 
 	# Perform phase retrieval for each batch of images
-	# Constants and normalize k-space using norm
 	print 'Performing Phase Retrieval...'
-	DELTA = 1.3E-6
-	PI, LAMBDA = 3.141592654, 5.8E-11 / SCALE
-	L, MU = 0.8 / SCALE , 500. * SCALE 
 	images_fft = tc.rfft(images, 2, onesided=False)
 	
 	# Set up in plane wave propagator
@@ -61,7 +61,6 @@ for s in glob.glob(PR_PATH+'*'):
 	# Save all images to the correct folder
 	print 'Saving Images...'
 	[saver(s + '/' + str(i) + '.png', absorp[i]) for i in range(NUM_IM)]
-
 
 print '\n\nDone!\n\n'
 #
