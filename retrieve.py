@@ -1,5 +1,4 @@
 import shutil, glob, os, re
-import matplotlib.pyplot as plt
 from itertools import imap
 import torch as tc
 import numpy as np
